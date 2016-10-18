@@ -12,4 +12,4 @@ add_executable(runBasicTests
 
 target_link_libraries(runBasicTests gtest gtest_main)
 target_link_libraries(runBasicTests gmock gmock_main)
-#target_link_libraries(runBasicTests src)
+target_link_libraries(runBasicTests src)

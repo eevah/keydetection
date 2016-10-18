@@ -1,62 +1,60 @@
-cmake_minimum_required(VERSION 3.6)
-project(src_run)
+project(src)
 
-find_package(Boost 1.61.0)
-include_directories(${Boost_INCLUDE_DIRS})
-add_executable(BoostTest main.cpp)
-target_link_libraries(BoostTest ${Boost_LIBRARIES})
-
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
-
-set(SOURCE_FILES
-        main.cpp
-        filters/CompositeKeyProbabilityFilter.cpp
+set(HEADER_FILES
         filters/CompositeKeyProbabilityFilter.h
-        filters/KeyProbabilityFilter.cpp
         filters/KeyProbabilityFilter.h
-        filters/KeyProbabilitySet.cpp
         filters/KeyProbabilitySet.h
-        filters/MultiKeyProbabilityFilter.cpp
         filters/MultiKeyProbabilityFilter.h
-        filters/SingleKeyProbabilityFilter.cpp
         filters/SingleKeyProbabilityFilter.h
-        filters/SpiralKeyProbabilityFilter.cpp
         filters/SpiralKeyProbabilityFilter.h
-        Accuracy.cpp
         Accuracy.h
-        Bpm.cpp
         Bpm.h
-        DetectedKey.cpp
         DetectedKey.h
-        key/Key.cpp
         key/Key.h
-        key/KeyCode.cpp
         key/KeyCode.h
-        key/KeyRelation.cpp
         key/KeyRelation.h
-        key/ShiftedKeyNotation.cpp
         key/ShiftedKeyNotation.h
-        KeyDetectionMatrix.cpp
         KeyDetectionMatrix.h
-        KeyDetector.cpp
         KeyDetector.h
-        KeyProbability.cpp
         KeyProbability.h
         RectangularVectors.h
         stringbuilder.h
         util/Semaphore.h
-        util/Semaphore.cpp
-        util/SortObjectWrapper.cpp
         util/SortObjectWrapper.h
-        util/Task.cpp
         util/Task.h
-        util/TaskProgressListener.cpp
         util/TaskProgressListener.h
-        audio/WavFile.cpp
         audio/WavFile.h
         audio/WavDefinition.h
-        audio/ByteToSampleReader.cpp
         audio/ByteToSampleReader.h
+        audio/TConversionTool.h
+        audio/AudioBuffer.h
+        )
+
+set(SOURCE_FILES
+        filters/CompositeKeyProbabilityFilter.cpp
+        filters/KeyProbabilityFilter.cpp
+        filters/KeyProbabilitySet.cpp
+        filters/MultiKeyProbabilityFilter.cpp
+        filters/SingleKeyProbabilityFilter.cpp
+        filters/SpiralKeyProbabilityFilter.cpp
+        Accuracy.cpp
+        Bpm.cpp
+        DetectedKey.cpp
+        key/Key.cpp
+        key/KeyCode.cpp
+        key/KeyRelation.cpp
+        key/ShiftedKeyNotation.cpp
+        KeyDetectionMatrix.cpp
+        KeyDetector.cpp
+        KeyProbability.cpp
+        util/Semaphore.cpp
+        util/SortObjectWrapper.cpp
+        util/Task.cpp
+        util/TaskProgressListener.cpp
+        audio/WavFile.cpp
+        audio/ByteToSampleReader.cpp
         audio/TConversionTool.cpp
-        audio/TConversionTool.h audio/AudioBuffer.cpp audio/AudioBuffer.h)
-add_executable(src_run ${SOURCE_FILES})
+        audio/AudioBuffer.cpp
+        )
+
+add_library(src STATIC ${SOURCE_FILES} ${HEADER_FILES})

@@ -6,6 +6,6 @@
 #include "../../src/key/Key.h"
 
 TEST(keyTest, test_eq) {
-    //std::string test = Key::getKey("Gm")->toString();
-    EXPECT_EQ("test", "G ionaian");
+    std::string test = Key::getKey("Gm")->toString();
+    EXPECT_EQ(test, "G ionian");
 }
