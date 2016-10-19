@@ -130,7 +130,9 @@ int WavFile::openWavFile(string filename)
     pFile = fopen( filename.c_str(), "rb");
     if(pFile == NULL)
     {
-        printf("Can't open wav file.");
+        std::cerr << "Can't open wav file.\n";
+
+        //TODO: Not good to just exit here. Throw an exception
         exit(-1);
     }
 

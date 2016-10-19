@@ -1420,7 +1420,7 @@ Key *Key::getKey(const std::string &description)
 					rootValue += 12;
 				}
 				// determine the scale type:
-                if (boost::contains("m", descriptionCopy) && !boost::contains("major", descriptionCopy) && !boost::contains("mix", descriptionCopy))
+                if (boost::contains(descriptionCopy, "m") && !boost::contains(descriptionCopy, "major") && !boost::contains(descriptionCopy, "mix"))
 			    {
 					scaleType = SCALE_AEOLIAN;
 				}
@@ -1438,23 +1438,23 @@ Key *Key::getKey(const std::string &description)
 		rootValue = validateRootValue(rootValue);
 
 		// look for non-standard modes:
-		if (boost::contains("dor", descriptionCopy))
+		if (boost::contains(descriptionCopy, "dor"))
 		{
 			scaleType = SCALE_DORIAN;
 		}
-		else if (boost::contains("phr", descriptionCopy))
+		else if (boost::contains(descriptionCopy, "phr"))
 		{
 			scaleType = SCALE_PHRYGIAN;
 		}
-		else if (boost::contains("mix", descriptionCopy))
+		else if (boost::contains(descriptionCopy, "mix"))
 		{
 			scaleType = SCALE_MIXOLYDIAN;
 		}
-		else if (boost::contains("lyd", descriptionCopy))
+		else if (boost::contains(descriptionCopy, "lyd"))
 		{
 			scaleType = SCALE_LYDIAN;
 		}
-		else if (boost::contains("loc", descriptionCopy))
+		else if (boost::contains(descriptionCopy, "loc"))
 		{
 			scaleType = SCALE_LOCRIAN;
 		}
