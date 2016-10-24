@@ -34,6 +34,7 @@
 #include <vector>
 #include "ByteToSampleReader.h"
 #include "AudioBuffer.h"
+#include <fstream>
 
 #ifndef  CONST84
 #define CONST84       /* -----  not CONST84  ----- */
@@ -55,18 +56,19 @@ public:
 
     long int getNumSamples();
     int getNumChannels();
+    double getNumFrames();
     int getBitsPerSample();
     double getSampleRateHz();
     double getTotalSeconds();
     double getSecondsRead();
     double getMaxFrequency();
     AudioBuffer getAudioBuffer();
-    int displayInformation(char* fileName);
+    int displayInformation(std::string fileName);
     int ifMoreDataAvailable();
 
     /* ====================  DATA MEMBERS  ======================================= */
 protected:
-    double fs_hz;
+    double sampleRate;
     int bitsPerSample;
     int nChannel;
 
@@ -74,11 +76,14 @@ protected:
     int bytesPerFrame;
 
     int numInSamples;
-    long int maxInSamples;
+    long int nSamples;
+    long int nFrames;
     long totalSeconds;
     long framesProcessed;
 
     FILE *pFile;
+    FILE *outFile;
+    //fstream outputFile;
 
     long low_limit = 0l;
     long high_limit = 0l;
@@ -89,7 +94,9 @@ protected:
     AudioBuffer *audioBuffer;
 
 public:
-    int openWavFile(std::string filename);
+    int readWavFile(std::string filename);
+    int readAndWrite(long numFrames);
+    void openFile(std::string filename);
     int writeDataToFile( char* outfile );
     int validateData();
 

@@ -10,7 +10,7 @@ double KeyProbability::analyze_segment_size = 0.1;
 
 struct {
 	bool operator() (SortObjectWrapper& lhs, SortObjectWrapper& rhs) {
-		return (lhs.getValue() > rhs.getValue());
+		return (lhs.getValue() < rhs.getValue()); // sort in ascending order
 	}
 } compareKeyProbabilities;
 
@@ -32,14 +32,14 @@ KeyProbability::KeyProbability(double segmentTime)
 
 	double aeolianProb1[] = {0.2, 0.0, 0.12, 0.16, 0.0, 0.12, 0.0, 0.16, 0.12, 0.0, 0.12, 0.0};
 	double aeolianProb2[] = {0.2, 0.0, 0.12, 0.16, 0.0, 0.12, 0.0, 0.16, 0.12, 0.0, 0.0, 0.12};
-	std::vector<std::vector<double>> aeolianProbVect = RectangularVectors::ReturnRectangularDoubleVector(12, 12);
+	std::vector<std::vector<double>> aeolianProbVect = RectangularVectors::ReturnRectangularDoubleVector(2, 12);
 	aeolianProbVect[0] = std::vector<double>(aeolianProb1, aeolianProb1 + sizeof aeolianProb1 / sizeof aeolianProb1[0]);
 	aeolianProbVect[1] = std::vector<double>(aeolianProb2, aeolianProb2 + sizeof aeolianProb2 / sizeof aeolianProb2[0]);
 	filters.push_back(new MultiKeyProbabilityFilter(false, "aeolian", aeolianProbVect)); // harmonic
 
 	double dorianProb1[] = {0.2, 0.0, 0.12, 0.16, 0.0, 0.12, 0.0, 0.16, 0.0, 0.12, 0.12, 0.0};
 	double dorianProb2[] = {0.2, 0.0, 0.12, 0.16, 0.0, 0.12, 0.0, 0.16, 0.0, 0.12, 0.0, 0.12};
-	std::vector<std::vector<double>> dorianProbVect = RectangularVectors::ReturnRectangularDoubleVector(12, 12);
+	std::vector<std::vector<double>> dorianProbVect = RectangularVectors::ReturnRectangularDoubleVector(2, 12);
 	dorianProbVect[0] = std::vector<double>(dorianProb1, dorianProb1 + sizeof dorianProb1 / sizeof dorianProb1[0]);
 	dorianProbVect[1] = std::vector<double>(dorianProb2, dorianProb2 + sizeof dorianProb2 / sizeof dorianProb2[0]);
 	filters.push_back(new MultiKeyProbabilityFilter(false, "dorian", dorianProbVect)); // augmented

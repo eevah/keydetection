@@ -8,7 +8,8 @@ target_link_libraries(BoostTest1 ${Boost_LIBRARIES})
 
 add_executable(runBasicTests
         basic_check.cpp
-        keyTest.cpp)
+        keyTest.cpp
+        readWavTest.cpp)
 
 target_link_libraries(runBasicTests gtest gtest_main)
 target_link_libraries(runBasicTests gmock gmock_main)

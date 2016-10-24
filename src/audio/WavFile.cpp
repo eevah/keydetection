@@ -20,15 +20,14 @@
 #include "WavFile.h"
 #include "WavDefinition.h"
 #include <string.h>
-#include <stdio.h>
 #include <stdlib.h>
-#include <math.h>
-#include <vector>
-#include <malloc.h>
 
 using namespace std;
-#define EXIT_SUCCESS    1
-#define EXIT_FAILURE    0
+
+//TODO: Problem with using EXIT_SUCCESS and EXIT_FAILURE from cstdlib
+#define THIS_EXIT_SUCCESS    1
+#define THIS_EXIT_FAILURE    0
+
 
 
 WavFile::WavFile() {
@@ -41,12 +40,17 @@ WavFile::~WavFile()
 
 long int WavFile::getNumSamples()
 {
-    return maxInSamples;
+    return nSamples;
 }
 
 int WavFile::getNumChannels()
 {
     return nChannel;
+}
+
+double WavFile::getNumFrames()
+{
+    return nFrames;
 }
 
 int WavFile::getBitsPerSample()
@@ -56,11 +60,11 @@ int WavFile::getBitsPerSample()
 
 double WavFile::getSampleRateHz()
 {
-    return fs_hz;
+    return sampleRate;
 }
 
 double WavFile::getMaxFrequency() {
-    return fs_hz / 2;
+    return sampleRate / 2;
 }
 
 double WavFile::getTotalSeconds() {
@@ -68,24 +72,24 @@ double WavFile::getTotalSeconds() {
 }
 
 double WavFile::getSecondsRead() {
-    ((double)framesProcessed) / fs_hz;
+    return ((double)framesProcessed) / sampleRate;
 }
 
 AudioBuffer WavFile::getAudioBuffer() {
     return *audioBuffer;
 }
 
-int WavFile::ifMoreDataAvailable()
-{
-    if(numInSamples >= maxInSamples)
+void WavFile::openFile(std::string fileName) {
+    pFile = fopen(fileName.c_str(), "rb");
+    if(pFile == NULL)
     {
-        return 0;
+        std::cerr << "Can't open wav file.\n";
+        //TODO: Not good to just exit here. Throw an exception
+        exit(-1);
     }
-    return 1;
 }
 
-
-int WavFile::openWavFile(string filename)
+int WavFile::readWavFile(string filename)
 {
     int i;
     unsigned int stat;
@@ -99,45 +103,15 @@ int WavFile::openWavFile(string filename)
     int sFlag;
     long int rMore;
 
-    char* wBuffer;
-    int wBufferLength;
-
-    /* set the defaults values. */
     numInSamples = 0;
-    maxInSamples = 0;
+    nSamples = 0;
+    nFrames = 0;
     framesProcessed = 0;
 
-    /* allocate wav header */
     pWavHeader = new WAV_HDR;
     pChunkHeader = new CHUNK_HDR;
 
-    if( NULL == pWavHeader )
-    {
-        printf("can't new headers\n");
-        exit(-1);
-    }
-
-    if( NULL == pChunkHeader )
-    {
-        printf("can't new headers\n");
-        exit(-1);
-    }
-
-    /*
-     * open the wav file
-     */
-    std::cout << filename << "\n";
-    pFile = fopen( filename.c_str(), "rb");
-    if(pFile == NULL)
-    {
-        printf("Can't open wav file.");
-        exit(-1);
-    }
-
-
-    /*-----------------------------------------------------------------------------
-     *  Now, we have load the file. Start reading data.
-     *-----------------------------------------------------------------------------*/
+    openFile(filename);
 
     /* read riff/wav header */
     stat = fread((void*) pWavHeader, sizeof(WAV_HDR), (size_t)1, pFile);
@@ -166,12 +140,6 @@ int WavFile::openWavFile(string filename)
         outBuffer[i] = pWavHeader->wID[i];
     outBuffer[4] = 0;
 
-#ifdef DEBUG
-    std::cout<<"\noutBuffer: "<<outBuffer<<"and fID:"<<pWavHeader->fId;
-    print_hdr( pWavHeader );
-#else      /* -----  not >DEBUG  ----- */
-
-#endif     /* -----  not >DEBUG  ----- */
 
     if(strcmp(outBuffer, "WAVE") != 0) // tested.
     {
@@ -228,7 +196,6 @@ int WavFile::openWavFile(string filename)
         }
 
         // read chunk header
-        cerr << "Size of chunk" << sizeof( CHUNK_HDR) << endl;
         stat = fread((void*)pChunkHeader, sizeof(CHUNK_HDR), (size_t)1, pFile);
         if( 1 != stat)
         {
@@ -258,26 +225,36 @@ int WavFile::openWavFile(string filename)
 
     }
 
-    /* find length of remaining data. */
-    wBufferLength = pChunkHeader->dLen;
-    cerr << "wBufferLength : " << pChunkHeader->dLen;
-
-    maxInSamples = pChunkHeader->dLen;
-    maxInSamples /= pWavHeader->numBitsPerSample/8;
+    // Number of samples equals length of data in bytes divided by number of bytes per sample
+    nSamples = pChunkHeader->dLen / (pWavHeader->numBitsPerSample / 8);
 
 
-    fs_hz = (double) (pWavHeader->nSamplesPerSec);
+    sampleRate = (double) (pWavHeader->nSamplesPerSec);
     bitsPerSample = pWavHeader->numBitsPerSample;
     nChannel = pWavHeader->numChannels;
-
+    nFrames = nSamples / nChannel;
 
     bytesPerSample = bitsPerSample / 8;
-    bytesPerFrame = nChannel * bytesPerSample;
+    bytesPerFrame = nChannel * bytesPerSample; // TODO: double check
 
-    totalSeconds = maxInSamples / fs_hz;
+
+    totalSeconds = nSamples / nChannel / sampleRate;
 
     audioBuffer = new AudioBuffer(default_frame_buffer_size, nChannel);
     internalBuffer.resize(default_frame_buffer_size * bytesPerFrame);
+
+
+    // ----------------------//
+    // Write header to new file
+    outFile = fopen((filename + "-modified.wav").c_str(), "wb");
+   // outputFile.open(filename + "-modified1.wav", ios::out|ios::binary);
+
+  //  outputFile.write((char*)&pWavHeader, sizeof(WAV_HDR));/// write the header to output file
+    fwrite((void*)pWavHeader, sizeof(WAV_HDR), (size_t)1, outFile);
+    //----------------------//
+   // outputFile.write((char*)&pChunkHeader, sizeof(CHUNK_HDR));/// write the header to output file
+    fwrite((void*)pChunkHeader, sizeof(CHUNK_HDR), (size_t)1, outFile);
+
 
     /* reset and delete */
     numInSamples = 0;
@@ -291,31 +268,29 @@ int WavFile::openWavFile(string filename)
     //fclose(pFile);
 
     if (validateData() == 1)
-        return EXIT_SUCCESS;
+        return THIS_EXIT_SUCCESS;
     else
-        return EXIT_FAILURE;
+        return THIS_EXIT_FAILURE;
 }
 
-int WavFile::displayInformation(char* fName)
+int WavFile::displayInformation(std::string filename)
 {
     printf("\n-----------------------------------------------------");
-    printf("\nLoaded wav file : %s", fName);
-    printf("\nSample rate: %1.01f (Hz)", fs_hz);
-    printf("\nNumber of samples = %ld", maxInSamples);
+    printf("\nLoaded wav file : %s", filename);
+    printf("\nSample rate: %1.01f (Hz)", sampleRate);
+    printf("\nNumber of samples = %ld", nSamples);
     printf("\nBits per sample = %d", bitsPerSample);
     printf("\nNumber of channels = %d", nChannel);
+    printf("\nNumber of frames = %ld", nSamples / nChannel);
+    printf("\nDuration = %d", totalSeconds);
     printf("\n----------------------------------------------------\n");
 
-    return EXIT_SUCCESS;
+    return THIS_EXIT_SUCCESS;
 }
-
-//audioBuffer = new AudioBuffer(CodecConstants.DEFAULT_FRAME_BUFFER_SIZE, audioFormat.getChannels());
-//bytes_per_sample = audioFormat.getSampleSizeInBits() / 8;
-//bytes_per_frame = audioFormat.getChannels() * bytes_per_sample;
-
 
 void WavFile::closeWavFile() {
     fclose(pFile);
+   // outputFile.close();
 }
 
 int WavFile::validateData() {
@@ -350,33 +325,52 @@ int WavFile::validateData() {
     }
 }
 
+int WavFile::readAndWrite(long numFrames) {
+
+    long x = bytesPerFrame * numFrames;
+    long y = internalBuffer.size();
+    int length = std::min(x, y);
+    int bytes_read = 0;
+    char* chunk = new char[length];
+    int this_bytes_read = fread(chunk, sizeof(char), length, pFile);
+
+    while ((this_bytes_read != 0) && (bytes_read < length)) {
+
+        for (int i = 0; i < this_bytes_read; i++) {
+            internalBuffer[bytes_read] = chunk[i];
+
+            //Writing every second sample (in each channel)
+            //if (i % 4 == 0 || i % 4 == 1) {
+                fwrite((char*)&chunk[i], sizeof(char), (size_t)1, outFile);
+            //}
+            bytes_read++;
+        }
+        delete[] chunk;
+        chunk = new char[length - bytes_read];
+        this_bytes_read = fread(chunk, sizeof(char), length - bytes_read, pFile);//decodedInputStream.read(internal_buffer, bytes_read, length - bytes_read);
+    }
+    return bytes_read / bytesPerFrame;
+
+}
+
 long WavFile::readFrames(long numFrames, bool normalized) {
-
-    vector<vector<double>> dataVector(nChannel, vector<double>(numFrames));
-
-    //TODO: Difference between frames and samples?
-    // says they are the same (for wav) http://stackoverflow.com/questions/3957025/what-does-a-audio-frame-contain
-    // says they are different http://sound.stackexchange.com/questions/5022/how-many-samples-are-in-a-frame
-    // http://stackoverflow.com/questions/2226853/interpreting-wav-data
 
     int frames_read = 0;
     const bool isBigEndian = false; // We are only reading files that start with RIFF for now, and they are little endian
     try {
 
         long x = bytesPerFrame * numFrames;
-        long y = internalBuffer.size(); //sizeof(internalBuffer)/sizeof(internalBuffer[0]);
+        long y = internalBuffer.size();
         int length = std::min(x, y);
         int bytes_read = 0;
         char* chunk = new char[length];
         int this_bytes_read = fread(chunk, sizeof(char), length, pFile);
 
-        //TODO: This copying is taking too much time! Fix it.
+        //TODO: This copying is taking too much time! Fix it. May not be copying but the printing to console that was there.
         //TODO: Make sure that this loop is doing what's expected
         while ((this_bytes_read != 0) && (bytes_read < length)) {
 
             for (int i = 0; i < this_bytes_read; i++) {
-//                std::cout << "bytes_read = " << bytes_read << '\n';
-//                std::cout << "chunk[i] = " << chunk[i] << '\n';
                 internalBuffer[bytes_read] = chunk[i];
                 bytes_read++;
             }
@@ -384,6 +378,8 @@ long WavFile::readFrames(long numFrames, bool normalized) {
             chunk = new char[length - bytes_read];
             this_bytes_read = fread(chunk, sizeof(char), length - bytes_read, pFile);//decodedInputStream.read(internal_buffer, bytes_read, length - bytes_read);
         }
+
+        // TODO: Next for testing
         delete[] chunk;
         int count = 0;
         while (count < bytes_read) {
@@ -392,12 +388,10 @@ long WavFile::readFrames(long numFrames, bool normalized) {
                                 ByteToSampleReader::getSampleFromBytesNormalized(internalBuffer, count, bytesPerSample, isBigEndian)
                                            : ByteToSampleReader::getSampleFromBytes(internalBuffer, count, bytesPerSample, isBigEndian);
                 audioBuffer->setSampleValue(frames_read, channel, sample);
-//                dataVector[channel][frames_read] = sample;
                 count += bytesPerSample;
             }
             ++frames_read;
         }
-        std::cout << 'done';
     } catch(exception e) {
         std::cout << e.what() << '\n';
     }

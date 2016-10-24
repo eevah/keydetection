@@ -96,7 +96,7 @@ DetectedKey *KeyDetector::detectKey()
         //TODO: Write code for file lock
         //FileLockManager::startFileRead(filename);
 
-        int fileIsOpen = wavDecoder->openWavFile(filename);
+        int fileIsOpen = wavDecoder->readWavFile(filename);
         if (fileIsOpen == 1)
         {
             double segmentTime = KEY_DETECTOR_ANALYZE_CHUNK_SIZE / wavDecoder->getSampleRateHz() * 1000;
@@ -110,11 +110,11 @@ DetectedKey *KeyDetector::detectKey()
             {
                 if (percentCount <= percentAudioToProcess)
                 {
-                    long long frames_read = wavDecoder->readFrames(KEY_DETECTOR_ANALYZE_CHUNK_SIZE, false); //decoder->readFrames(KEY_DETECTOR_ANALYZE_CHUNK_SIZE);
+                    long long frames_read = wavDecoder->readFrames(KEY_DETECTOR_ANALYZE_CHUNK_SIZE, true); //decoder->readFrames(KEY_DETECTOR_ANALYZE_CHUNK_SIZE);
                     if ((frames_read < KEY_DETECTOR_ANALYZE_CHUNK_SIZE) && (frames_read > 0))
                     {
                         //TODO: Use proper logging
-                        std::cout << "detectKeyFromFile(): insufficient audio found, looping audio segment to meet minimum length required";
+                       // std::cout << "detectKeyFromFile(): insufficient audio found, looping audio segment to meet minimum length required";
 //                        }
 //                        if (log->isDebugEnabled())
 //                        {
@@ -138,7 +138,7 @@ DetectedKey *KeyDetector::detectKey()
                     {
 
 
-                        AudioBuffer test = wavDecoder->getAudioBuffer();
+                       // AudioBuffer test = wavDecoder->getAudioBuffer();
 
                         analyzeSegment(norm_keycount, segment_probabilities, cwt);
 
@@ -170,11 +170,11 @@ DetectedKey *KeyDetector::detectKey()
                                 Key *k = start_section->getStartKey();
                                 double ac = start_section->getAccuracyValue();
 
-                                DetectedKey *test = new DetectedKey();
-                                test->setAccuracy(ac);
+                                //DetectedKey *test = new DetectedKey();
+                                //test->setAccuracy(ac);
                                 result->setAccuracy(ac);
 
-                                result->setStartKey(k);
+                                //result->setStartKey(k);
 
                                 result->setStartKey(start_section->getStartKey());
 
@@ -267,9 +267,9 @@ DetectedKey *KeyDetector::detectKey()
                 }
 //                Date endtime = Date();
                 long long endTime = duration_cast< milliseconds >(system_clock::now().time_since_epoch()).count();
-                long long seconds = endTime - startTime; //(endtime.getTime() - startTime) / 1000;
+                long long seconds = (endTime - startTime)/1000; //(endtime.getTime() - startTime) / 1000;
                 //TODO: Log properly
-                std::cout << "detectKey(): detected key=" << result << ", in " << seconds << " seconds";
+                std::cout << "Key detected in " << seconds << " seconds\n";
 //                log->debug(std::wstring(L"detectKey(): detected key=") + result + std::wstring(L", in ") + seconds + std::wstring(L" seconds"));
             }
             else

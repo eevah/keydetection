@@ -4,7 +4,7 @@
 #include <boost/algorithm/string.hpp>
 #include <iostream>
 
-const bool propShowAdvancedKeyInfo = true;
+const bool propShowAdvancedKeyInfo = false;
 const std::string propPreferredKeyFormat = "sharp"; // {sharp, flat, keycode}
 
 const float M_E = 2.718281828459045;
@@ -1233,8 +1233,8 @@ Key *Key::getKey(const std::string &description)
 		float rootValue = Key::ROOT_UNKNOWN;
 		int scaleType = Key::SCALE_UNKNOWN;
 
-        //TODO: Ivana created a copy of description
-        std::string descriptionCopy = description;
+		//TODO: Ivana created a copy of description
+		std::string descriptionCopy = description;
 
 		// parse out the shift from the end:
 		bool negative_shift = false;
@@ -1269,10 +1269,10 @@ Key *Key::getKey(const std::string &description)
 			catch (std::exception &e)
 			{
 			}
-            descriptionCopy = descriptionCopy.substr(0, shift_index);
+			descriptionCopy = descriptionCopy.substr(0, shift_index);
 		}
 
-        descriptionCopy = boost::trim_copy(boost::to_lower_copy(descriptionCopy));
+		descriptionCopy = boost::trim_copy(boost::to_lower_copy(descriptionCopy));
 
 		// look for keycodes:
 		int numericIndex = 0;
@@ -1420,8 +1420,8 @@ Key *Key::getKey(const std::string &description)
 					rootValue += 12;
 				}
 				// determine the scale type:
-                if (boost::contains("m", descriptionCopy) && !boost::contains("major", descriptionCopy) && !boost::contains("mix", descriptionCopy))
-			    {
+				if (boost::contains(descriptionCopy, "m") && !boost::contains(descriptionCopy, "major") && !boost::contains(descriptionCopy, "mix"))
+				{
 					scaleType = SCALE_AEOLIAN;
 				}
 				else
@@ -1438,23 +1438,23 @@ Key *Key::getKey(const std::string &description)
 		rootValue = validateRootValue(rootValue);
 
 		// look for non-standard modes:
-		if (boost::contains("dor", descriptionCopy))
+		if (boost::contains(descriptionCopy, "dor"))
 		{
 			scaleType = SCALE_DORIAN;
 		}
-		else if (boost::contains("phr", descriptionCopy))
+		else if (boost::contains(descriptionCopy, "phr"))
 		{
 			scaleType = SCALE_PHRYGIAN;
 		}
-		else if (boost::contains("mix", descriptionCopy))
+		else if (boost::contains(descriptionCopy, "mix"))
 		{
 			scaleType = SCALE_MIXOLYDIAN;
 		}
-		else if (boost::contains("lyd", descriptionCopy))
+		else if (boost::contains(descriptionCopy, "lyd"))
 		{
 			scaleType = SCALE_LYDIAN;
 		}
-		else if (boost::contains("loc", descriptionCopy))
+		else if (boost::contains(descriptionCopy, "loc"))
 		{
 			scaleType = SCALE_LOCRIAN;
 		}
@@ -1466,10 +1466,10 @@ Key *Key::getKey(const std::string &description)
 	}
 	catch (std::exception &e)
 	{
-        std::cout << "Key(): error Exception";
-        std::cout << e.what();
+		std::cout << "Key(): error Exception";
+		std::cout << e.what();
 
-        //TODO: Log error
+		//TODO: Log error
 		//log->error(L"Key(): error Exception", e);
 	}
 	return NO_KEY;
@@ -1495,7 +1495,7 @@ Key *Key::checkFactory(float rootValue, int scaleType)
 	Key *result = static_cast<Key*>(keyFlyWeights[primaryKey]);
 	if (result == nullptr)
 	{
-        //TODO: Log
+		//TODO: Log
 //		if (log->isTraceEnabled())
 //		{
 //			log->trace(L"checkFactory(): no existing key found");
@@ -1530,4 +1530,3 @@ void Key::setShiftedNotation(ShiftedKeyNotation *shiftedNotation)
 {
 	this->shiftedNotation = shiftedNotation;
 }
-
